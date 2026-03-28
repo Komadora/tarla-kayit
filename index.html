@@ -14,24 +14,19 @@
     }
     body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100dvh; display:flex; flex-direction:column; }
 
-    /* HEADER */
     .header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 16px; display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:10; }
     .header h1 { font-size:1rem; font-weight:600; flex:1; }
     .back-btn { background:none; border:none; color:var(--blue); font-size:1.2rem; cursor:pointer; padding:4px 8px; }
 
-    /* SCREENS */
     .screen { flex:1; display:none; flex-direction:column; padding:16px; gap:14px; overflow-y:auto; }
     .screen.active { display:flex; }
 
-    /* CARDS */
     .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
     .card-title { font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; font-weight:600; }
 
-    /* INPUTS */
-    input[type=text] { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:11px 13px; font-size:1rem; font-family:inherit; }
-    input[type=text]:focus { outline:none; border-color:var(--blue); }
+    input[type=text], input[type=tel] { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); padding:11px 13px; font-size:1rem; font-family:inherit; }
+    input:focus { outline:none; border-color:var(--blue); }
 
-    /* BUTTONS */
     .btn { border:none; border-radius:8px; padding:13px 16px; font-size:.95rem; font-weight:500; cursor:pointer; font-family:inherit; width:100%; transition:opacity .15s; }
     .btn:active { opacity:.7; } .btn:disabled { opacity:.3; cursor:default; }
     .btn-primary { background:var(--blue); color:#fff; }
@@ -39,7 +34,6 @@
     .btn-danger  { background:var(--red);  color:#fff; }
     .btn-muted   { background:var(--surface); color:var(--text); border:1px solid var(--border); }
 
-    /* STEPPER */
     .stepper-row { display:flex; align-items:center; justify-content:space-between; }
     .stepper-label { font-size:.95rem; }
     .stepper-label small { display:block; font-size:.78rem; color:var(--muted); margin-top:2px; }
@@ -48,15 +42,18 @@
     .stepper button:active { background:var(--border); }
     .stepper .val { width:52px; text-align:center; font-size:1.2rem; font-weight:700; border-left:1px solid var(--border); border-right:1px solid var(--border); line-height:44px; }
 
-    /* PREVIEW */
     .preview-grid { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
     .char-chip { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:3px 8px; font-size:.78rem; color:var(--muted); }
     .char-chip.rep1 { color:#79c0ff; border-color:#1f3d5c; }
     .char-chip.rep2 { color:#a5d6a7; border-color:#1b3a2a; }
     .char-chip.rep3 { color:#ffcc80; border-color:#3a2e1a; }
-    .char-chip.repN { color:var(--muted); border-color:var(--border); }
+    .char-chip.repN { color:var(--muted); }
 
-    /* TRIAL LIST */
+    /* TABS */
+    .tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .tab { flex:1; padding:10px; text-align:center; font-size:.88rem; font-weight:600; cursor:pointer; background:var(--bg); color:var(--muted); border:none; transition:all .15s; }
+    .tab.active { background:var(--blue); color:#fff; }
+
     .trial-item { display:flex; align-items:center; gap:12px; padding:13px; background:var(--surface); border:1px solid var(--border); border-radius:12px; cursor:pointer; }
     .trial-item:active { opacity:.7; }
     .trial-item .info { flex:1; }
@@ -67,25 +64,19 @@
     .badge-wip  { background:#1a2a3a; color:var(--blue); }
     .empty-state { text-align:center; color:var(--muted); padding:48px 20px; line-height:1.8; font-size:.92rem; }
 
-    /* PROGRESS */
     .prog-bar { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
     .prog-fill { height:100%; background:var(--green); border-radius:3px; transition:width .4s; }
     .prog-text { font-size:.78rem; color:var(--muted); text-align:right; margin-top:4px; }
 
-    /* ENTRY CELL INFO */
     .cell-card { text-align:center; padding:18px; }
     .cell-rep   { font-size:.82rem; color:var(--muted); margin-bottom:6px; }
     .cell-plant { font-size:2rem; font-weight:800; line-height:1; }
     .cell-char  { font-size:1rem; color:var(--yellow); margin-top:4px; }
     .cell-sub   { font-size:.78rem; color:var(--muted); margin-top:2px; }
 
-    /* DIKTE INPUT (iOS) */
-    .dikte-wrap { display:flex; flex-direction:column; gap:6px; }
     .dikte-input { width:100%; background:var(--bg); border:2px solid var(--border); border-radius:10px; color:var(--text); padding:14px; font-size:2rem; font-family:inherit; text-align:center; font-weight:700; letter-spacing:.04em; }
     .dikte-input:focus { outline:none; border-color:var(--blue); }
-    .dikte-hint { font-size:.78rem; color:var(--muted); text-align:center; }
 
-    /* WEB SPEECH (Android) */
     .val-display { text-align:center; background:var(--surface); border:2px solid var(--border); border-radius:14px; padding:20px 16px; transition:border-color .2s; }
     .val-display.confirmed { border-color:var(--green); }
     .val-display.listening { border-color:var(--blue); }
@@ -93,16 +84,11 @@
     .val-big.interim { color:var(--muted); font-style:italic; font-size:1.6rem; }
     .val-hint { font-size:.8rem; color:var(--muted); margin-top:6px; min-height:1.2em; }
 
-    /* INPUT */
-    .input-wrap { display:flex; align-items:center; }
-
     .countdown { text-align:center; font-size:.86rem; color:var(--green); min-height:1.4em; font-weight:500; }
 
-    /* NAV ROW */
     .nav-row { display:flex; gap:8px; }
     .nav-row .btn { flex:1; padding:11px 6px; font-size:.86rem; }
 
-    /* EXPORT TABLE */
     .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:8px; }
     table { border-collapse:collapse; font-size:.8rem; min-width:100%; }
     th,td { border:1px solid var(--border); padding:6px 9px; text-align:center; white-space:nowrap; }
@@ -113,15 +99,6 @@
     .section-header { background:#0d1f0d !important; color:var(--green) !important; font-weight:700; text-align:left !important; }
 
     hr.divider { border:none; border-top:1px solid var(--border); }
-
-    /* CONTACTS */
-    .contact-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
-    .contact-row:last-child { border-bottom:none; }
-    .contact-name { flex:1; font-size:.92rem; }
-    .contact-phone { font-size:.78rem; color:var(--muted); }
-    .btn-wa { background:#25d366; color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
-    .btn-wa:active { opacity:.75; }
-    .btn-rm { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:4px; }
   </style>
 </head>
 <body>
@@ -134,20 +111,22 @@
 <!-- HOME -->
 <div class="screen active" id="screen-home">
   <button class="btn btn-primary" id="btn-new">+ Yeni Deneme Tasarla</button>
+  <div class="tabs">
+    <button class="tab active" id="tab-active">Aktif Denemeler</button>
+    <button class="tab" id="tab-archive">Geçmiş</button>
+  </div>
   <div id="trials-list"></div>
 </div>
 
-<!-- SETUP / DESIGN -->
+<!-- SETUP -->
 <div class="screen" id="screen-setup">
   <div class="card">
     <div class="card-title">Deneme Adı</div>
     <input type="text" id="inp-name" placeholder="ör. Buğday Verim Denemesi 2025">
   </div>
-
   <div class="card">
     <div class="card-title">Parametreler</div>
     <div style="display:flex;flex-direction:column;gap:14px;">
-
       <div class="stepper-row">
         <div class="stepper-label">Tekerrür Sayısı<small>Kaç kez tekrarlanacak?</small></div>
         <div class="stepper">
@@ -156,7 +135,6 @@
           <button onclick="step('reps',+1)">+</button>
         </div>
       </div>
-
       <div class="stepper-row">
         <div class="stepper-label">Bitki Sayısı<small>Her tekerrürde kaç bitki?</small></div>
         <div class="stepper">
@@ -165,7 +143,6 @@
           <button onclick="step('plants',+1)">+</button>
         </div>
       </div>
-
       <div class="stepper-row">
         <div class="stepper-label">Karakter Sayısı<small>Kaç özellik ölçülecek?</small></div>
         <div class="stepper">
@@ -174,15 +151,12 @@
           <button onclick="step('chars',+1)">+</button>
         </div>
       </div>
-
     </div>
   </div>
-
   <div class="card">
     <div class="card-title">Önizleme — Oluşacak Karakterler</div>
     <div class="preview-grid" id="preview-grid"></div>
   </div>
-
   <button class="btn btn-success" id="btn-create">▶ Denemeyi Oluştur & Veri Girişine Başla</button>
 </div>
 
@@ -192,33 +166,24 @@
     <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
     <div class="prog-text" id="prog-text">0 / 0</div>
   </div>
-
-  <div class="card cell-card" id="cell-card">
+  <div class="card cell-card">
     <div class="cell-rep"   id="cell-rep"></div>
     <div class="cell-plant" id="cell-plant"></div>
     <div class="cell-char"  id="cell-char"></div>
     <div class="cell-sub"   id="cell-sub"></div>
   </div>
-
-  <!-- Değer göstergesi -->
   <div class="val-display" id="val-display">
     <div class="val-big" id="val-big">—</div>
-    <div class="val-hint" id="val-hint">Kutuya dokunup klavyedeki 🎤 ile söyleyin</div>
+    <div class="val-hint" id="val-hint">Klavyedeki 🎤 ile konuşun</div>
   </div>
   <div class="countdown" id="countdown"></div>
-
-  <!-- Giriş kutusu + mikrofon ikonu -->
-  <div class="input-wrap">
-    <input class="dikte-input" id="dikte-inp" type="text"
-           placeholder="dokunup klavyedeki 🎤 ile konuşun" autocomplete="off" autocorrect="off" spellcheck="false">
-  </div>
-
+  <input class="dikte-input" id="dikte-inp" type="text"
+         placeholder="değer" autocomplete="off" autocorrect="off" spellcheck="false">
   <div class="nav-row">
     <button class="btn btn-muted" id="btn-prev">← Önceki</button>
     <button class="btn btn-muted" id="btn-skip">Atla →</button>
     <button class="btn btn-success" id="btn-confirm">✓ Kaydet</button>
   </div>
-
   <hr class="divider">
   <button class="btn btn-primary" id="btn-to-export">📊 Özet & Excel İndir</button>
 </div>
@@ -229,17 +194,6 @@
     <button class="btn btn-success" id="btn-dl" style="flex:1">⬇ İndir</button>
     <button class="btn btn-primary" id="btn-share" style="flex:1">📤 Paylaş</button>
   </div>
-
-  <div class="card" id="contacts-card">
-    <div class="card-title">Hızlı WhatsApp Paylaşım</div>
-    <div id="contacts-list"></div>
-    <div style="display:flex;gap:8px;margin-top:10px;">
-      <input type="text" id="inp-cname" placeholder="İsim" style="flex:1">
-      <input type="tel"  id="inp-cphone" placeholder="90 5XX XXX XX XX" style="flex:1.4">
-      <button class="btn btn-muted" id="btn-add-contact" style="width:auto;padding:10px 12px;flex-shrink:0">Ekle</button>
-    </div>
-  </div>
-
   <div class="card">
     <div class="card-title">Önizleme</div>
     <div class="table-wrap"><table id="exp-table"></table></div>
@@ -251,17 +205,14 @@
 <script>
 // ── STORAGE ─────────────────────────────────────────────────
 let trials = JSON.parse(localStorage.getItem('tarla_v2') || '[]');
-let active = null, curIdx = 0, tempVal = '', cdTimer = null, recog = null;
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+let active = null, curIdx = 0, tempVal = '', cdTimer = null;
+let homeTab = 'active'; // 'active' veya 'archive'
 function persist() { localStorage.setItem('tarla_v2', JSON.stringify(trials)); }
 
 // ── CELL MATH ────────────────────────────────────────────────
-// Order: rep → plant → char
 function totalCells(t) { return t.reps * t.plants * t.chars; }
 
 function cellAt(t, idx) {
-  // Sıra: tekerrür → karakter → bitki (yukarıdan aşağıya: önce 1.bitki 101, 2.bitki 101...)
   const rep   = Math.floor(idx / (t.chars * t.plants));
   const rem   = idx % (t.chars * t.plants);
   const char  = Math.floor(rem / t.plants);
@@ -269,16 +220,12 @@ function cellAt(t, idx) {
   return { rep, plant, char };
 }
 
-function charCode(rep, charIdx) { return (rep + 1) * 100 + charIdx + 1; }  // 101,102... / 201,202...
-
+function charCode(rep, charIdx) { return (rep + 1) * 100 + charIdx + 1; }
 function cellKey(rep, plant, char) { return `${rep}_${plant}_${char}`; }
-
 function getv(t, rep, plant, char) { return t.data[cellKey(rep, plant, char)] ?? ''; }
 function setv(t, rep, plant, char, v) { t.data[cellKey(rep, plant, char)] = v; }
-
-function filledCount(t) {
-  return Object.values(t.data).filter(v => v !== '').length;
-}
+function filledCount(t) { return Object.values(t.data).filter(v => v !== '').length; }
+function isDone(t) { return filledCount(t) === totalCells(t) && totalCells(t) > 0; }
 
 // ── SETUP STEPPERS ───────────────────────────────────────────
 const cfg = { reps: 3, plants: 10, chars: 10 };
@@ -292,16 +239,12 @@ window.step = function(key, delta) {
 
 function renderPreview() {
   const el = document.getElementById('preview-grid');
-  const repClasses = ['rep1','rep2','rep3','repN'];
+  const rc = ['rep1','rep2','rep3','repN'];
   let html = '';
-  for (let r = 0; r < Math.min(cfg.reps, 3); r++) {
-    for (let c = 0; c < cfg.chars; c++) {
-      html += `<span class="char-chip ${repClasses[r]}">${charCode(r,c)}</span>`;
-    }
-  }
-  if (cfg.reps > 3) {
-    html += `<span class="char-chip repN">…+${cfg.reps - 3} tekerrür daha</span>`;
-  }
+  for (let r = 0; r < Math.min(cfg.reps, 3); r++)
+    for (let c = 0; c < cfg.chars; c++)
+      html += `<span class="char-chip ${rc[r]}">${charCode(r,c)}</span>`;
+  if (cfg.reps > 3) html += `<span class="char-chip repN">…+${cfg.reps-3} tekerrür daha</span>`;
   el.innerHTML = html;
 }
 
@@ -322,16 +265,28 @@ document.getElementById('back-btn').addEventListener('click', () => {
   else { show('home'); renderHome(); }
 });
 
-// ── HOME ─────────────────────────────────────────────────────
+// ── HOME + TABS ──────────────────────────────────────────────
+document.getElementById('tab-active').addEventListener('click', () => { homeTab='active'; updateTabs(); renderHome(); });
+document.getElementById('tab-archive').addEventListener('click', () => { homeTab='archive'; updateTabs(); renderHome(); });
+
+function updateTabs() {
+  document.getElementById('tab-active').classList.toggle('active', homeTab==='active');
+  document.getElementById('tab-archive').classList.toggle('active', homeTab==='archive');
+}
+
 function renderHome() {
   const el = document.getElementById('trials-list');
-  if (!trials.length) {
-    el.innerHTML = '<div class="empty-state">Henüz deneme yok.<br>Yeni bir deneme tasarlayın.</div>';
+  const filtered = trials.filter(t => homeTab==='archive' ? isDone(t) : !isDone(t));
+
+  if (!filtered.length) {
+    el.innerHTML = homeTab==='archive'
+      ? '<div class="empty-state">Tamamlanmış deneme yok.</div>'
+      : '<div class="empty-state">Henüz aktif deneme yok.<br>Yeni bir deneme tasarlayın.</div>';
     return;
   }
-  el.innerHTML = trials.map(t => {
+  el.innerHTML = filtered.map(t => {
     const done = filledCount(t), tot = totalCells(t);
-    const pct  = tot ? Math.round(done/tot*100) : 0;
+    const pct = tot ? Math.round(done/tot*100) : 0;
     const badge = pct===100
       ? '<span class="badge badge-done">Tamamlandı</span>'
       : `<span class="badge badge-wip">%${pct}</span>`;
@@ -347,15 +302,15 @@ function renderHome() {
 window.openTrial = function(id) {
   active = trials.find(t => t.id === id);
   curIdx = active.lastIdx || 0;
-  show('entry'); renderEntry();
+  if (isDone(active)) { renderExport(); show('export'); }
+  else { show('entry'); renderEntry(); }
 };
 
 document.getElementById('btn-new').addEventListener('click', () => {
   cfg.reps = 3; cfg.plants = 10; cfg.chars = 10;
   ['reps','plants','chars'].forEach(k => document.getElementById('val-'+k).textContent = cfg[k]);
   document.getElementById('inp-name').value = '';
-  renderPreview();
-  show('setup');
+  renderPreview(); show('setup');
 });
 
 // ── SETUP ────────────────────────────────────────────────────
@@ -363,8 +318,8 @@ document.getElementById('btn-create').addEventListener('click', () => {
   const name = document.getElementById('inp-name').value.trim();
   if (!name) { alert('Deneme adı girin.'); return; }
   const t = {
-    id: Date.now().toString(),
-    name, date: new Date().toLocaleDateString('tr-TR'),
+    id: Date.now().toString(), name,
+    date: new Date().toLocaleDateString('tr-TR'),
     reps: cfg.reps, plants: cfg.plants, chars: cfg.chars,
     data: {}, lastIdx: 0,
   };
@@ -375,46 +330,54 @@ document.getElementById('btn-create').addEventListener('click', () => {
 
 // ── TÜRKÇE YAZI → SAYI ──────────────────────────────────────
 function turkceToNumber(text) {
-  if (text === '' || text === null) return '';
-  text = text.trim().toLowerCase();
+  if (text === '' || text === null || text === undefined) return '';
+  text = text.trim().toLowerCase().replace(/i̇/g, 'i'); // iOS büyük İ düzelt
 
-  // Zaten sayıysa olduğu gibi döndür
+  // Zaten sayıysa
   if (/^-?\d+([.,]\d+)?$/.test(text)) return text.replace(',', '.');
 
-  const birler = {sıfır:0,bir:1,iki:2,üç:3,dört:4,beş:5,altı:6,yedi:7,sekiz:8,dokuz:9};
-  const onlar  = {on:10,yirmi:20,otuz:30,kırk:40,elli:50,altmış:60,yetmiş:70,seksen:80,doksan:90};
+  const birler = {
+    'sıfır':0, 'sifir':0, 'bir':1, 'iki':2, 'üç':3, 'uc':3,
+    'dört':4, 'dort':4, 'beş':5, 'bes':5, 'altı':6, 'alti':6,
+    'yedi':7, 'sekiz':8, 'dokuz':9
+  };
+  const onlar = {
+    'on':10, 'yirmi':20, 'otuz':30, 'kırk':40, 'kirk':40,
+    'elli':50, 'altmış':60, 'altmis':60, 'yetmiş':70, 'yetmis':70,
+    'seksen':80, 'doksan':90
+  };
 
   function parcala(str) {
-    if (!str || !str.trim()) return 0;
+    if (!str || !str.trim()) return { val: 0, matched: false };
     const kelimeler = str.trim().split(/\s+/);
-    let sonuc = 0, mevcut = 0;
+    let sonuc = 0, mevcut = 0, matched = false;
     for (const k of kelimeler) {
-      if (k === 'yüz')      { mevcut = (mevcut || 1) * 100; }
-      else if (k === 'bin') { mevcut = (mevcut || 1) * 1000; sonuc += mevcut; mevcut = 0; }
-      else if (onlar[k] !== undefined)  { mevcut += onlar[k]; }
-      else if (birler[k] !== undefined) { mevcut += birler[k]; }
+      if (k === 'yüz' || k === 'yuz')  { mevcut = (mevcut || 1) * 100; matched = true; }
+      else if (k === 'bin')             { mevcut = (mevcut || 1) * 1000; sonuc += mevcut; mevcut = 0; matched = true; }
+      else if (onlar[k] !== undefined)  { mevcut += onlar[k]; matched = true; }
+      else if (birler[k] !== undefined) { mevcut += birler[k]; matched = true; }
     }
-    return sonuc + mevcut;
+    return { val: sonuc + mevcut, matched };
   }
 
-  // "buçuk" → .5
-  const buçuk = text.includes('buçuk');
-  let temiz = text.replace('buçuk', '').trim();
+  const buçuk = text.includes('buçuk') || text.includes('bucuk');
+  let temiz = text.replace(/buçuk|bucuk/g, '').trim();
 
-  // "virgül" veya "nokta" ile ondalık
-  const parcalar = temiz.split(/\s*(?:virgül|nokta)\s*/);
-  let tam = parcala(parcalar[0]);
+  const parcalar = temiz.split(/\s*(?:virgül|virgul|nokta)\s*/);
+  const tam = parcala(parcalar[0]);
+
+  if (!tam.matched && !buçuk) return text; // Türkçe sayı bulunamadı
 
   if (parcalar.length > 1 && parcalar[1]) {
     const ondalik = parcala(parcalar[1]);
-    const hane = String(ondalik).length;
-    return tam + ondalik / Math.pow(10, hane);
+    if (ondalik.matched) {
+      const hane = String(ondalik.val).length;
+      return tam.val + ondalik.val / Math.pow(10, hane);
+    }
   }
 
-  if (buçuk) return tam + 0.5;
-
-  // Dönüşüm yapılamadıysa orijinal metni döndür
-  return tam || text;
+  if (buçuk) return tam.val + 0.5;
+  return tam.val;
 }
 
 // ── ENTRY ────────────────────────────────────────────────────
@@ -441,6 +404,9 @@ function renderEntry() {
 
   document.getElementById('btn-prev').disabled = curIdx === 0;
   clearCd();
+
+  // Klavye hep açık: odakla
+  setTimeout(() => { inp.focus(); inp.select(); }, 200);
 }
 
 function updateValDisplay(v, confirmed) {
@@ -450,7 +416,7 @@ function updateValDisplay(v, confirmed) {
   document.getElementById('val-display').className = 'val-display' + (confirmed ? ' confirmed' : v ? ' listening' : '');
   document.getElementById('val-hint').textContent = confirmed
     ? '✓ Kaydedildi'
-    : (v ? '✓ Kaydet\'e basın' : 'Mikrofona basın veya aşağıya yazın');
+    : 'Klavyedeki 🎤 ile konuşun';
 }
 
 function doConfirm(val) {
@@ -463,14 +429,13 @@ function doConfirm(val) {
   updateValDisplay(v, true);
   clearCd();
 
-  // Dikteyi durdur: blur → input sıfırla → sonraki karaktere geç
-  const inp = document.getElementById('dikte-inp');
-  inp.blur(); // iOS diktesini keser
+  // Dikteyi durdur: blur → bekle → sonraki → tekrar odakla
+  document.getElementById('dikte-inp').blur();
 
   setTimeout(() => {
     if (curIdx < totalCells(active)-1) {
       curIdx++;
-      renderEntry();
+      renderEntry(); // renderEntry zaten focus yapıyor
     } else {
       document.getElementById('prog-text').textContent = '🎉 Tüm değerler girildi!';
     }
@@ -483,10 +448,10 @@ document.getElementById('dikte-inp').addEventListener('input', e => {
   tempVal = String(converted);
   updateValDisplay(tempVal, false);
 
-  // Her girişte zamanlayıcı sıfırla, 1 sn sessizlik → otomatik kaydet
   clearCd();
   if (raw.trim()) startCd(tempVal);
 });
+
 document.getElementById('dikte-inp').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); doConfirm(tempVal); }
 });
@@ -501,12 +466,10 @@ document.getElementById('btn-prev').addEventListener('click', () => { clearCd();
 document.getElementById('btn-skip').addEventListener('click', () => { clearCd(); if(curIdx<totalCells(active)-1){curIdx++;renderEntry();} });
 document.getElementById('btn-to-export').addEventListener('click', () => { renderExport(); show('export'); });
 
-// countdown
 function startCd(val) {
   clearCd();
-  const el = document.getElementById('countdown');
-  el.textContent = 'Kaydediliyor…';
-  cdTimer = setTimeout(() => { cdTimer=null; el.textContent=''; doConfirm(val); }, 1000);
+  document.getElementById('countdown').textContent = 'Kaydediliyor…';
+  cdTimer = setTimeout(() => { cdTimer=null; document.getElementById('countdown').textContent=''; doConfirm(val); }, 1000);
 }
 function clearCd() {
   if(cdTimer){clearTimeout(cdTimer);cdTimer=null;}
@@ -517,13 +480,9 @@ function clearCd() {
 function buildRows(t) {
   const allRows = [];
   for (let r = 0; r < t.reps; r++) {
-    // Section header (like Excel: "Karakterler/Bitki Sayısı | 101 | 102...")
-    const header = r === 0
-      ? 'Karakterler/Bitki Sayısı'
-      : `${r+1}. tekerrür Karakterler/Bitki Sayısı`;
+    const header = r === 0 ? 'Karakterler/Bitki Sayısı' : `${r+1}. tekerrür Karakterler/Bitki Sayısı`;
     const charCodes = Array.from({length:t.chars}, (_,ci) => charCode(r,ci));
-    allRows.push({ type:'header', label: header, codes: charCodes, rep: r });
-    // Plant rows
+    allRows.push({ type:'header', label: header, codes: charCodes });
     for (let p = 0; p < t.plants; p++) {
       const vals = Array.from({length:t.chars}, (_,ci) => getv(t,r,p,ci));
       allRows.push({ type:'data', plant: p+1, vals });
@@ -547,21 +506,18 @@ function renderExport() {
   });
   html += '</tbody>';
   document.getElementById('exp-table').innerHTML = html;
-  renderContacts();
 }
 
-function buildXlsxBlob(t) {
+function buildXlsx(t) {
   const wb = XLSX.utils.book_new();
   const wsData = [];
   for (let r = 0; r < t.reps; r++) {
     const label = r === 0 ? 'Karakterler/Bitki Sayısı' : `${r+1}. tekerrür Karakterler/Bitki Sayısı`;
-    const codes = Array.from({length:t.chars}, (_,ci) => charCode(r,ci));
-    wsData.push([label, ...codes]);
+    wsData.push([label, ...Array.from({length:t.chars}, (_,ci) => charCode(r,ci))]);
     for (let p = 0; p < t.plants; p++) {
       const row = [p+1];
       for (let ci = 0; ci < t.chars; ci++) {
-        const v = getv(t,r,p,ci);
-        const n = parseFloat(v);
+        const v = getv(t,r,p,ci), n = parseFloat(v);
         row.push(v !== '' && !isNaN(n) ? n : v);
       }
       wsData.push(row);
@@ -571,71 +527,22 @@ function buildXlsxBlob(t) {
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   ws['!cols'] = [{wch:30}, ...Array(t.chars).fill({wch:8})];
   XLSX.utils.book_append_sheet(wb, ws, t.name.slice(0,31));
-  return { wb, filename: (t.name+'_'+t.date).replace(/[\s/\\:*?"<>|]/g,'_')+'.xlsx' };
+  const fn = (t.name+'_'+t.date).replace(/[\s/\\:*?"<>|]/g,'_')+'.xlsx';
+  return { wb, filename: fn };
 }
 
 document.getElementById('btn-dl').addEventListener('click', () => {
-  const { wb, filename } = buildXlsxBlob(active);
+  const { wb, filename } = buildXlsx(active);
   XLSX.writeFile(wb, filename);
 });
 
 document.getElementById('btn-share').addEventListener('click', async () => {
-  if (!navigator.share) { alert('Tarayıcınız paylaşımı desteklemiyor. Dosyayı indirip manuel gönderin.'); return; }
-  const t = active;
-  const { wb, filename } = buildXlsxBlob(t);
+  if (!navigator.share) { alert('Dosyayı indirip manuel gönderin.'); return; }
+  const { wb, filename } = buildXlsx(active);
   const buf = XLSX.write(wb, { bookType:'xlsx', type:'array' });
   const file = new File([buf], filename, { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  try {
-    await navigator.share({ files:[file], title: t.name });
-  } catch(e) {
-    if (e.name !== 'AbortError') alert('Paylaşım başarısız: ' + e.message);
-  }
-});
-
-// ── CONTACTS ─────────────────────────────────────────────────
-let contacts = JSON.parse(localStorage.getItem('tarla_contacts') || '[]');
-function saveContacts() { localStorage.setItem('tarla_contacts', JSON.stringify(contacts)); }
-
-function renderContacts() {
-  const el = document.getElementById('contacts-list');
-  if (!contacts.length) { el.innerHTML = '<div style="font-size:.82rem;color:var(--muted);padding:4px 0">Henüz kişi eklenmedi.</div>'; return; }
-  el.innerHTML = contacts.map((c,i) => `
-    <div class="contact-row">
-      <div style="flex:1">
-        <div class="contact-name">${c.name}</div>
-        <div class="contact-phone">${c.phone}</div>
-      </div>
-      <button class="btn-wa" onclick="shareToWA(${i})">WhatsApp'a Gönder</button>
-      <button class="btn-rm" onclick="removeContact(${i})">×</button>
-    </div>`).join('');
-}
-
-window.shareToWA = async function(i) {
-  const c = contacts[i];
-  const phone = c.phone.replace(/\D/g,'');
-  if (navigator.share) {
-    const t = active;
-    const { wb, filename } = buildXlsxBlob(t);
-    const buf = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-    const file = new File([buf], filename, { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    try { await navigator.share({ files:[file], title: t.name }); } catch(e) { if(e.name!=='AbortError') alert('Hata: '+e.message); }
-  } else {
-    window.open(`https://wa.me/${phone}`, '_blank');
-  }
-};
-
-window.removeContact = function(i) {
-  contacts.splice(i,1); saveContacts(); renderContacts();
-};
-
-document.getElementById('btn-add-contact').addEventListener('click', () => {
-  const name  = document.getElementById('inp-cname').value.trim();
-  const phone = document.getElementById('inp-cphone').value.trim();
-  if (!name || !phone) { alert('İsim ve telefon numarası girin.'); return; }
-  contacts.push({name, phone});
-  saveContacts(); renderContacts();
-  document.getElementById('inp-cname').value = '';
-  document.getElementById('inp-cphone').value = '';
+  try { await navigator.share({ files:[file], title: active.name }); }
+  catch(e) { if (e.name !== 'AbortError') alert('Hata: '+e.message); }
 });
 
 document.getElementById('btn-del').addEventListener('click', () => {
