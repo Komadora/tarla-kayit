@@ -161,6 +161,7 @@
 
     .divider { border: none; border-top: 1px solid var(--border); }
   </style>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -248,7 +249,7 @@
 
 <!-- EXPORT -->
 <div class="screen" id="screen-export">
-  <button class="btn btn-success" id="btn-dl-csv">⬇ CSV İndir (Excel için)</button>
+  <button class="btn btn-success" id="btn-dl-csv">⬇ Excel İndir (.xlsx)</button>
   <div class="card">
     <h3>Veri Önizleme</h3>
     <div class="table-wrap"><table id="data-table"></table></div>
@@ -594,15 +595,25 @@ document.getElementById('btn-dl-csv').addEventListener('click', () => {
   for (let r=0; r<t.replications; r++) {
     for (let tr=0; tr<t.treatments.length; tr++) {
       const row = [r+1, t.treatments[tr]];
-      t.measurements.forEach((_,mi) => row.push(getv(t,r,tr,mi)));
+      t.measurements.forEach((_,mi) => {
+        const v = getv(t,r,tr,mi);
+        const num = parseFloat(v);
+        row.push(v !== '' && !isNaN(num) ? num : v);
+      });
       rows.push(row);
     }
   }
-  const csv = '\uFEFF' + rows.map(r => r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = (t.name+'_'+t.date).replace(/\s/g,'_')+'.csv';
-  a.click();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Sütun genişlikleri
+  ws['!cols'] = rows[0].map((_, i) => ({ wch: i < 2 ? 14 : 18 }));
+  // Başlık satırı kalın
+  rows[0].forEach((_, i) => {
+    const cell = ws[XLSX.utils.encode_cell({r:0, c:i})];
+    if (cell) cell.s = { font: { bold: true } };
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, t.name.slice(0,31));
+  XLSX.writeFile(wb, (t.name+'_'+t.date).replace(/[\s/\\:*?"<>|]/g,'_')+'.xlsx');
 });
 
 document.getElementById('btn-delete').addEventListener('click', () => {
