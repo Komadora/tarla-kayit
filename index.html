@@ -93,11 +93,8 @@
     .val-big.interim { color:var(--muted); font-style:italic; font-size:1.6rem; }
     .val-hint { font-size:.8rem; color:var(--muted); margin-top:6px; min-height:1.2em; }
 
-    /* INPUT + MIC */
-    .input-wrap { position:relative; display:flex; align-items:center; }
-    .input-wrap .dikte-input { padding-right:54px; }
-    .input-mic { position:absolute; right:6px; width:42px; height:42px; border-radius:50%; border:none; background:var(--blue); font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s; }
-    .input-mic:active { background:#1d4ed8; }
+    /* INPUT */
+    .input-wrap { display:flex; align-items:center; }
 
     .countdown { text-align:center; font-size:.86rem; color:var(--green); min-height:1.4em; font-weight:500; }
 
@@ -213,8 +210,7 @@
   <!-- Giriş kutusu + mikrofon ikonu -->
   <div class="input-wrap">
     <input class="dikte-input" id="dikte-inp" type="text"
-           placeholder="dokunup konuşun" autocomplete="off" autocorrect="off" spellcheck="false">
-    <button class="input-mic" id="input-mic" type="button">🎙️</button>
+           placeholder="dokunup klavyedeki 🎤 ile konuşun" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
 
   <div class="nav-row">
@@ -439,11 +435,15 @@ function renderEntry() {
 
   const existing = getv(t, rep, plant, char);
   tempVal = existing;
-  document.getElementById('dikte-inp').value = existing;
+  const inp = document.getElementById('dikte-inp');
+  inp.value = existing;
   updateValDisplay(existing, existing !== '');
 
   document.getElementById('btn-prev').disabled = curIdx === 0;
   clearCd();
+
+  // Otomatik odakla — klavye hep açık kalsın
+  setTimeout(() => { inp.focus(); inp.select(); }, 150);
 }
 
 function updateValDisplay(v, confirmed) {
@@ -471,14 +471,13 @@ function doConfirm(val) {
   }, 400);
 }
 
-let inputTimer = null;
 document.getElementById('dikte-inp').addEventListener('input', e => {
   const raw = e.target.value;
   const converted = turkceToNumber(raw);
   tempVal = String(converted);
   updateValDisplay(tempVal, false);
 
-  // Her tuşta zamanlayıcıyı sıfırla, 2 sn sessizlik → otomatik kaydet
+  // Her girişte zamanlayıcı sıfırla, 1 sn sessizlik → otomatik kaydet
   clearCd();
   if (raw.trim()) startCd(tempVal);
 });
@@ -491,14 +490,6 @@ document.getElementById('btn-confirm').addEventListener('click', () => {
   const raw = document.getElementById('dikte-inp').value;
   doConfirm(tempVal || String(turkceToNumber(raw)));
 });
-// Input mic butonu → input'a odakla (iOS klavye açılır, kullanıcı klavyedeki 🎤'e basar)
-document.getElementById('input-mic').addEventListener('click', () => {
-  const inp = document.getElementById('dikte-inp');
-  inp.value = '';
-  tempVal = '';
-  updateValDisplay('', false);
-  inp.focus();
-});
 
 document.getElementById('btn-prev').addEventListener('click', () => { clearCd(); if(curIdx>0){curIdx--;renderEntry();} });
 document.getElementById('btn-skip').addEventListener('click', () => { clearCd(); if(curIdx<totalCells(active)-1){curIdx++;renderEntry();} });
@@ -506,13 +497,13 @@ document.getElementById('btn-to-export').addEventListener('click', () => { rende
 
 // countdown
 function startCd(val) {
-  clearCd(); let s=2;
+  clearCd();
   const el = document.getElementById('countdown');
-  el.textContent = `${s} sn içinde kaydedilecek…`;
-  cdTimer = setInterval(() => { s--; if(s<=0){clearCd();doConfirm(val);}else el.textContent=`${s} sn içinde kaydedilecek…`; }, 1000);
+  el.textContent = 'Kaydediliyor…';
+  cdTimer = setTimeout(() => { cdTimer=null; el.textContent=''; doConfirm(val); }, 1000);
 }
 function clearCd() {
-  if(cdTimer){clearInterval(cdTimer);cdTimer=null;}
+  if(cdTimer){clearTimeout(cdTimer);cdTimer=null;}
   document.getElementById('countdown').textContent='';
 }
 
