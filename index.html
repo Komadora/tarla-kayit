@@ -321,8 +321,16 @@ document.getElementById('btn-create').addEventListener('click', () => {
     id: Date.now().toString(), name,
     date: new Date().toLocaleDateString('tr-TR'),
     reps: cfg.reps, plants: cfg.plants, chars: cfg.chars,
-    data: {}, lastIdx: 0,
+    data: {}, lastIdx: 0, lat: null, lng: null,
   };
+  // GPS konumu al (arka planda)
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => { t.lat = pos.coords.latitude; t.lng = pos.coords.longitude; persist(); },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
   trials.push(t); persist();
   active = t; curIdx = 0;
   show('entry'); renderEntry();
@@ -419,6 +427,8 @@ function updateValDisplay(v, confirmed) {
     : 'Klavyedeki 🎤 ile konuşun';
 }
 
+let ignoreInput = false;
+
 function doConfirm(val) {
   const v = String(val ?? '').trim();
   if (v === '' || !active) return;
@@ -428,21 +438,57 @@ function doConfirm(val) {
   persist();
   updateValDisplay(v, true);
   clearCd();
+  ignoreInput = true;
 
-  // Dikteyi durdur: blur → bekle → sonraki → tekrar odakla
-  document.getElementById('dikte-inp').blur();
+  const inp = document.getElementById('dikte-inp');
 
+  // 1) Blur → dikte durur
+  inp.blur();
+
+  // 2) 400ms sonra → sonraki karaktere geç + klavyeyi tekrar aç
   setTimeout(() => {
     if (curIdx < totalCells(active)-1) {
       curIdx++;
-      renderEntry(); // renderEntry zaten focus yapıyor
+      renderEntryQuiet(); // UI güncelle ama focus yapma
     } else {
       document.getElementById('prog-text').textContent = '🎉 Tüm değerler girildi!';
+      ignoreInput = false;
+      return;
     }
-  }, 500);
+    // 3) 200ms daha → focus (klavye açılır, sadece 🎤'e bas yeter)
+    setTimeout(() => {
+      inp.focus();
+      // 4) 300ms daha → yeni girdi kabul etmeye başla
+      setTimeout(() => { ignoreInput = false; }, 300);
+    }, 200);
+  }, 400);
+}
+
+// renderEntry'nin focus yapmayan versiyonu (doConfirm akışı için)
+function renderEntryQuiet() {
+  if (!active) return;
+  const t = active, tot = totalCells(t);
+  const { rep, plant, char } = cellAt(t, curIdx);
+  const code = charCode(rep, char);
+
+  const done = filledCount(t);
+  document.getElementById('prog-fill').style.width = (tot ? done/tot*100 : 0) + '%';
+  document.getElementById('prog-text').textContent = `${done} / ${tot} hücre`;
+  document.getElementById('cell-rep').textContent   = `Tekerrür ${rep+1} / ${t.reps}`;
+  document.getElementById('cell-plant').textContent = `Bitki ${plant+1}`;
+  document.getElementById('cell-char').textContent  = `Karakter ${code}`;
+  document.getElementById('cell-sub').textContent   = `${char+1}. karakter · ${plant+1}/${t.plants} bitki`;
+
+  const existing = getv(t, rep, plant, char);
+  tempVal = existing;
+  document.getElementById('dikte-inp').value = existing;
+  updateValDisplay(existing, existing !== '');
+  document.getElementById('btn-prev').disabled = curIdx === 0;
+  clearCd();
 }
 
 document.getElementById('dikte-inp').addEventListener('input', e => {
+  if (ignoreInput) { e.target.value = ''; return; }
   const raw = e.target.value;
   const converted = turkceToNumber(raw);
   tempVal = String(converted);
@@ -511,21 +557,69 @@ function renderExport() {
 function buildXlsx(t) {
   const wb = XLSX.utils.book_new();
   const wsData = [];
+
   for (let r = 0; r < t.reps; r++) {
     const label = r === 0 ? 'Karakterler/Bitki Sayısı' : `${r+1}. tekerrür Karakterler/Bitki Sayısı`;
-    wsData.push([label, ...Array.from({length:t.chars}, (_,ci) => charCode(r,ci))]);
-    for (let p = 0; p < t.plants; p++) {
-      const row = [p+1];
+    const charCodes = Array.from({length:t.chars}, (_,ci) => charCode(r,ci));
+    const headerRow = [label, ...charCodes];
+
+    // İlk tekerrürde sağ üst köşeye tarih + GPS yaz
+    if (r === 0) {
+      // Sağ tarafa boş hücreler ekle, sonra tarih sütunu
+      while (headerRow.length < t.chars + 2) headerRow.push('');
+      headerRow.push('Tarih: ' + t.date);
+    }
+    wsData.push(headerRow);
+
+    // İlk tekerrürün ilk satırına GPS bilgisi ekle
+    if (r === 0) {
+      const firstPlantRow = [1];
       for (let ci = 0; ci < t.chars; ci++) {
-        const v = getv(t,r,p,ci), n = parseFloat(v);
-        row.push(v !== '' && !isNaN(n) ? n : v);
+        const v = getv(t,0,0,ci), n = parseFloat(v);
+        firstPlantRow.push(v !== '' && !isNaN(n) ? n : v);
       }
-      wsData.push(row);
+      while (firstPlantRow.length < t.chars + 2) firstPlantRow.push('');
+      if (t.lat && t.lng) {
+        firstPlantRow.push(`https://maps.google.com/?q=${t.lat},${t.lng}`);
+      } else {
+        firstPlantRow.push('Konum alınamadı');
+      }
+      wsData.push(firstPlantRow);
+
+      // Kalan bitkiler (2'den itibaren)
+      for (let p = 1; p < t.plants; p++) {
+        const row = [p+1];
+        for (let ci = 0; ci < t.chars; ci++) {
+          const v = getv(t,r,p,ci), n = parseFloat(v);
+          row.push(v !== '' && !isNaN(n) ? n : v);
+        }
+        wsData.push(row);
+      }
+    } else {
+      // Diğer tekerrürler normal
+      for (let p = 0; p < t.plants; p++) {
+        const row = [p+1];
+        for (let ci = 0; ci < t.chars; ci++) {
+          const v = getv(t,r,p,ci), n = parseFloat(v);
+          row.push(v !== '' && !isNaN(n) ? n : v);
+        }
+        wsData.push(row);
+      }
     }
     wsData.push([]);
   }
+
   const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = [{wch:30}, ...Array(t.chars).fill({wch:8})];
+  ws['!cols'] = [{wch:30}, ...Array(t.chars).fill({wch:8}), {wch:4}, {wch:45}];
+
+  // GPS hücresini tıklanabilir link yap
+  if (t.lat && t.lng) {
+    const gpsCell = XLSX.utils.encode_cell({r:1, c:t.chars+2});
+    if (ws[gpsCell]) {
+      ws[gpsCell].l = { Target: `https://maps.google.com/?q=${t.lat},${t.lng}` };
+    }
+  }
+
   XLSX.utils.book_append_sheet(wb, ws, t.name.slice(0,31));
   const fn = (t.name+'_'+t.date).replace(/[\s/\\:*?"<>|]/g,'_')+'.xlsx';
   return { wb, filename: fn };
