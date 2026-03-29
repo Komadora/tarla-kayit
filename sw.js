@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trialcore-v1';
+const CACHE_NAME = 'trialcore-v2';
 const ASSETS = [
   './',
   './index.html',
