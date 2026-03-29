@@ -3,14 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Tarla Kaydı</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230d1117'/><text x='50' y='62' font-size='50' text-anchor='middle' fill='%233fb950'>🌾</text></svg>">
+  <title>TrialCore</title>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    :root {
+    :root, [data-theme="dark"] {
       --bg: #0d1117; --surface: #161b22; --border: #21262d;
       --text: #e6edf3; --muted: #7d8590;
       --green: #3fb950; --blue: #388bfd; --red: #f85149; --yellow: #d29922;
+      --table-even: #0a0f15; --section-hdr-bg: #0d1f0d;
+    }
+    [data-theme="light"] {
+      --bg: #f5f5f5; --surface: #ffffff; --border: #d0d7de;
+      --text: #1f2328; --muted: #656d76;
+      --green: #1a7f37; --blue: #0969da; --red: #cf222e; --yellow: #9a6700;
+      --table-even: #f0f3f6; --section-hdr-bg: #dafbe1;
     }
     body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100dvh; display:flex; flex-direction:column; }
 
@@ -90,22 +103,54 @@
     .nav-row .btn { flex:1; padding:11px 6px; font-size:.86rem; }
 
     .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:8px; }
-    table { border-collapse:collapse; font-size:.8rem; min-width:100%; }
-    th,td { border:1px solid var(--border); padding:6px 9px; text-align:center; white-space:nowrap; }
-    th { background:var(--surface); color:var(--muted); font-weight:600; }
-    td.row-label { background:var(--surface); color:var(--muted); font-weight:600; }
-    tr:nth-child(even) td { background:#0a0f15; }
-    td.empty { color:var(--red); }
-    .section-header { background:#0d1f0d !important; color:var(--green) !important; font-weight:700; text-align:left !important; }
+    table { border-collapse:separate; border-spacing:3px; font-size:.85rem; min-width:100%; }
+    th,td { border:none; padding:8px 11px; text-align:center; white-space:nowrap; border-radius:6px; }
+    th { background:var(--surface); color:var(--muted); font-weight:700; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; }
+    td.row-label { background:var(--surface); color:var(--muted); font-weight:700; font-size:.8rem; }
+    td.empty { color:var(--red); background:var(--bg); opacity:.5; }
+    .section-header { background:var(--section-hdr-bg) !important; color:var(--green) !important; font-weight:700; text-align:left !important; border-radius:8px !important; font-size:.82rem; letter-spacing:.03em; padding:10px 14px !important; }
+
+    /* Isı haritası hücreleri */
+    #exp-table td:not(.row-label):not(.empty):not(.section-header) {
+      font-size:1rem; font-weight:800; min-width:42px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition:transform .1s;
+    }
+    #exp-table td:not(.row-label):not(.empty):not(.section-header):active { transform:scale(1.08); }
+
+    /* Analiz tablosu normal stil */
+    #stat-table td { background:var(--bg); }
+    #stat-table tr:nth-child(even) td { background:var(--table-even); }
 
     hr.divider { border:none; border-top:1px solid var(--border); }
+
+    .chart-wrap { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; }
+    .chart-wrap canvas { max-height:280px; }
+    .chart-title { font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; font-weight:600; }
+    .chart-tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:10px; }
+    .chart-tab { flex:1; padding:8px; text-align:center; font-size:.8rem; font-weight:600; cursor:pointer; background:var(--bg); color:var(--muted); border:none; }
+    .chart-tab.active { background:var(--blue); color:#fff; }
+
+    /* Sayım listesi */
+    .obs-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; cursor:pointer; margin-bottom:8px; }
+    .obs-item:active { opacity:.7; }
+    .obs-item .obs-icon { font-size:1.3rem; }
+    .obs-item .obs-info { flex:1; }
+    .obs-item .obs-label { font-weight:600; font-size:.95rem; }
+    .obs-item .obs-meta { font-size:.78rem; color:var(--muted); margin-top:2px; }
+    .badge-wait { background:var(--surface); color:var(--muted); }
+
+    /* Tema seçici */
+    .theme-bar { display:flex; align-items:center; justify-content:center; gap:0; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .theme-btn { flex:1; padding:9px 6px; text-align:center; font-size:.82rem; font-weight:600; cursor:pointer; background:var(--bg); color:var(--muted); border:none; font-family:inherit; transition:all .15s; }
+    .theme-btn.active { background:var(--blue); color:#fff; }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <button class="back-btn" id="back-btn" hidden>‹</button>
-  <h1 id="header-title">Tarla Kaydı</h1>
+  <button class="back-btn" id="back-btn" hidden>&#8249;</button>
+  <h1 id="header-title">TrialCore</h1>
 </div>
 
 <!-- HOME -->
@@ -113,40 +158,45 @@
   <button class="btn btn-primary" id="btn-new">+ Yeni Deneme Tasarla</button>
   <div class="tabs">
     <button class="tab active" id="tab-active">Aktif Denemeler</button>
-    <button class="tab" id="tab-archive">Geçmiş</button>
+    <button class="tab" id="tab-archive">Gecmis</button>
   </div>
   <div id="trials-list"></div>
+  <div class="theme-bar" id="theme-bar">
+    <button class="theme-btn" data-theme="light">&#9728;&#65039; Acik</button>
+    <button class="theme-btn" data-theme="auto">&#128262; Otomatik</button>
+    <button class="theme-btn" data-theme="dark">&#127769; Koyu</button>
+  </div>
 </div>
 
 <!-- SETUP -->
 <div class="screen" id="screen-setup">
   <div class="card">
-    <div class="card-title">Deneme Adı</div>
-    <input type="text" id="inp-name" placeholder="ör. Buğday Verim Denemesi 2025">
+    <div class="card-title">Deneme Adi</div>
+    <input type="text" id="inp-name" placeholder="or. Bugday Verim Denemesi 2025">
   </div>
   <div class="card">
     <div class="card-title">Parametreler</div>
     <div style="display:flex;flex-direction:column;gap:14px;">
       <div class="stepper-row">
-        <div class="stepper-label">Tekerrür Sayısı<small>Kaç kez tekrarlanacak?</small></div>
+        <div class="stepper-label">Tekerrur Sayisi<small>Kac kez tekrarlanacak?</small></div>
         <div class="stepper">
-          <button onclick="step('reps',-1)">−</button>
+          <button onclick="step('reps',-1)">&minus;</button>
           <div class="val" id="val-reps">3</div>
           <button onclick="step('reps',+1)">+</button>
         </div>
       </div>
       <div class="stepper-row">
-        <div class="stepper-label">Bitki Sayısı<small>Her tekerrürde kaç bitki?</small></div>
+        <div class="stepper-label">Bitki Sayisi<small>Her tekerrurde kac bitki?</small></div>
         <div class="stepper">
-          <button onclick="step('plants',-1)">−</button>
+          <button onclick="step('plants',-1)">&minus;</button>
           <div class="val" id="val-plants">10</div>
           <button onclick="step('plants',+1)">+</button>
         </div>
       </div>
       <div class="stepper-row">
-        <div class="stepper-label">Karakter Sayısı<small>Kaç özellik ölçülecek?</small></div>
+        <div class="stepper-label">Karakter Sayisi<small>Kac ozellik olculecek?</small></div>
         <div class="stepper">
-          <button onclick="step('chars',-1)">−</button>
+          <button onclick="step('chars',-1)">&minus;</button>
           <div class="val" id="val-chars">10</div>
           <button onclick="step('chars',+1)">+</button>
         </div>
@@ -154,10 +204,29 @@
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Önizleme — Oluşacak Karakterler</div>
+    <div class="card-title">Onizleme — Olusacak Karakterler</div>
     <div class="preview-grid" id="preview-grid"></div>
   </div>
-  <button class="btn btn-success" id="btn-create">▶ Denemeyi Oluştur & Veri Girişine Başla</button>
+  <button class="btn btn-success" id="btn-create">&#9654; Denemeyi Olustur &amp; Veri Girisine Basla</button>
+</div>
+
+<!-- SAYIM LiSTESi -->
+<div class="screen" id="screen-obs">
+  <div class="card">
+    <div class="card-title" id="obs-trial-name"></div>
+    <div id="obs-list"></div>
+  </div>
+  <button class="btn btn-success" id="btn-new-obs">+ Yeni Sayim Ekle</button>
+  <div id="obs-form" style="display:none">
+    <div class="card" style="margin-top:8px">
+      <div class="card-title">Sayim Bilgisi</div>
+      <input type="text" id="inp-obs-label" placeholder="or. 3. Gun, Ciceklenme, Hasat" style="margin-bottom:10px">
+      <input type="text" id="inp-obs-date" style="margin-bottom:12px">
+      <button class="btn btn-primary" id="btn-start-obs">Basla &rarr;</button>
+    </div>
+  </div>
+  <hr class="divider">
+  <button class="btn btn-primary" id="btn-obs-export">&#128202; Ozet &amp; Excel Indir</button>
 </div>
 
 <!-- ENTRY -->
@@ -173,40 +242,138 @@
     <div class="cell-sub"   id="cell-sub"></div>
   </div>
   <div class="val-display" id="val-display">
-    <div class="val-big" id="val-big">—</div>
-    <div class="val-hint" id="val-hint">Klavyedeki 🎤 ile konuşun</div>
+    <div class="val-big" id="val-big">&mdash;</div>
+    <div class="val-hint" id="val-hint">Klavyedeki &#127908; ile konusun</div>
   </div>
   <div class="countdown" id="countdown"></div>
   <input class="dikte-input" id="dikte-inp" type="text"
-         placeholder="değer" autocomplete="off" autocorrect="off" spellcheck="false">
+         placeholder="deger" autocomplete="off" autocorrect="off" spellcheck="false">
   <div class="nav-row">
-    <button class="btn btn-muted" id="btn-prev">← Önceki</button>
-    <button class="btn btn-muted" id="btn-skip">Atla →</button>
-    <button class="btn btn-success" id="btn-confirm">✓ Kaydet</button>
+    <button class="btn btn-muted" id="btn-prev">&larr; Onceki</button>
+    <button class="btn btn-muted" id="btn-skip">Atla &rarr;</button>
+    <button class="btn btn-success" id="btn-confirm">&#10003; Kaydet</button>
   </div>
   <hr class="divider">
-  <button class="btn btn-primary" id="btn-to-export">📊 Özet & Excel İndir</button>
+  <button class="btn btn-primary" id="btn-to-export">&#128202; Ozet &amp; Excel Indir</button>
 </div>
 
 <!-- EXPORT -->
 <div class="screen" id="screen-export">
   <div style="display:flex;gap:8px;">
-    <button class="btn btn-success" id="btn-dl" style="flex:1">⬇ İndir</button>
-    <button class="btn btn-primary" id="btn-share" style="flex:1">📤 Paylaş</button>
+    <button class="btn btn-success" id="btn-dl" style="flex:1">&#11015; Indir</button>
+    <button class="btn btn-primary" id="btn-share" style="flex:1">&#128228; Paylas</button>
   </div>
-  <div class="card">
-    <div class="card-title">Önizleme</div>
-    <div class="table-wrap"><table id="exp-table"></table></div>
+
+  <!-- ANA SEKMELER: Ham Veri / Analiz / Zaman Serisi -->
+  <div class="tabs" id="export-tabs">
+    <button class="tab active" id="etab-raw">Ham Veri</button>
+    <button class="tab" id="etab-analysis">Analiz</button>
+    <button class="tab" id="etab-timeline" style="display:none">Zaman Serisi</button>
   </div>
+
+  <!-- HAM VERi paneli -->
+  <div id="panel-raw">
+    <div class="card">
+      <div class="card-title">Veri Onizleme</div>
+      <div class="table-wrap"><table id="exp-table"></table></div>
+    </div>
+  </div>
+
+  <!-- ANALiZ paneli (gizli baslar) -->
+  <div id="panel-analysis" style="display:none">
+    <!-- Alt sekmeler -->
+    <div class="chart-tabs">
+      <button class="chart-tab active" id="ctab-avg">Ortalamalar</button>
+      <button class="chart-tab" id="ctab-cv">CV%</button>
+      <button class="chart-tab" id="ctab-rep">Tekerrur Karsilastirma</button>
+    </div>
+    <div class="chart-wrap"><canvas id="chart-canvas"></canvas></div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="card-title">Karakter Bazli Istatistikler</div>
+      <div class="table-wrap"><table id="stat-table"></table></div>
+    </div>
+  </div>
+
+  <!-- ZAMAN SERiSi paneli (gizli baslar) -->
+  <div id="panel-timeline" style="display:none">
+    <div class="card">
+      <div class="card-title">Zaman Karsilastirma — Karakter Ortalamalari</div>
+      <div class="table-wrap"><table id="timeline-table"></table></div>
+    </div>
+    <div class="chart-wrap" style="margin-top:12px">
+      <div class="chart-title">Zaman Serisi Grafigi</div>
+      <canvas id="timeline-chart"></canvas>
+    </div>
+  </div>
+
   <hr class="divider">
-  <button class="btn btn-danger" id="btn-del">🗑 Denemeyi Sil</button>
+  <button class="btn btn-danger" id="btn-del">&#128465; Denemeyi Sil</button>
 </div>
 
 <script>
+// ── TEMA YONETiMi ──────────────────────────────────────────
+(function() {
+  const saved = localStorage.getItem('tarla_theme') || 'dark';
+  let ambientSensor = null;
+  let autoLux = null;
+
+  function applyTheme(mode) {
+    let effective = mode;
+    if (mode === 'auto') {
+      if (autoLux !== null) {
+        effective = autoLux < 50 ? 'dark' : 'light';
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        effective = 'light';
+      } else {
+        effective = 'dark';
+      }
+    }
+    document.documentElement.setAttribute('data-theme', effective);
+    const mc = document.querySelector('meta[name="theme-color"]');
+    if (mc) mc.content = effective === 'light' ? '#f5f5f5' : '#0d1117';
+  }
+
+  function setActive(mode) {
+    localStorage.setItem('tarla_theme', mode);
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.theme === mode);
+    });
+    applyTheme(mode);
+  }
+
+  try {
+    if ('AmbientLightSensor' in window) {
+      ambientSensor = new AmbientLightSensor();
+      ambientSensor.addEventListener('reading', () => {
+        autoLux = ambientSensor.illuminance;
+        if (localStorage.getItem('tarla_theme') === 'auto') applyTheme('auto');
+      });
+      ambientSensor.start();
+    }
+  } catch(e) {}
+
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+      if (localStorage.getItem('tarla_theme') === 'auto') applyTheme('auto');
+    });
+  }
+
+  applyTheme(saved);
+  document.addEventListener('DOMContentLoaded', () => {
+    setActive(saved);
+    document.getElementById('theme-bar').addEventListener('click', e => {
+      const btn = e.target.closest('.theme-btn');
+      if (btn) setActive(btn.dataset.theme);
+    });
+  });
+})();
+
 // ── STORAGE ─────────────────────────────────────────────────
 let trials = JSON.parse(localStorage.getItem('tarla_v2') || '[]');
 let active = null, curIdx = 0, tempVal = '', cdTimer = null;
-let homeTab = 'active'; // 'active' veya 'archive'
+let homeTab = 'active';
+let activeObs = null;
 function persist() { localStorage.setItem('tarla_v2', JSON.stringify(trials)); }
 
 // ── CELL MATH ────────────────────────────────────────────────
@@ -222,10 +389,29 @@ function cellAt(t, idx) {
 
 function charCode(rep, charIdx) { return (rep + 1) * 100 + charIdx + 1; }
 function cellKey(rep, plant, char) { return `${rep}_${plant}_${char}`; }
-function getv(t, rep, plant, char) { return t.data[cellKey(rep, plant, char)] ?? ''; }
-function setv(t, rep, plant, char, v) { t.data[cellKey(rep, plant, char)] = v; }
-function filledCount(t) { return Object.values(t.data).filter(v => v !== '').length; }
-function isDone(t) { return filledCount(t) === totalCells(t) && totalCells(t) > 0; }
+
+function ensureObs(t) {
+  if (!t.observations) {
+    const hasData = t.data && Object.keys(t.data).length > 0;
+    t.observations = hasData
+      ? [{ id: 'obs_0', label: '1. Sayım', date: t.date, data: t.data, lastIdx: t.lastIdx || 0 }]
+      : [];
+    persist();
+  }
+}
+
+function getObsData() { return activeObs ? activeObs.data : {}; }
+function getv(t, rep, plant, char) { return getObsData()[cellKey(rep, plant, char)] ?? ''; }
+function setv(t, rep, plant, char, v) { getObsData()[cellKey(rep, plant, char)] = v; }
+function filledCount(t) { return Object.values(getObsData()).filter(v => v !== '').length; }
+function filledCountObs(obs) { return Object.values(obs.data).filter(v => v !== '').length; }
+
+function isDone(t) {
+  ensureObs(t);
+  if (!t.observations.length) return false;
+  const tot = totalCells(t);
+  return t.observations.every(o => Object.values(o.data).filter(v => v !== '').length === tot) && tot > 0;
+}
 
 // ── SETUP STEPPERS ───────────────────────────────────────────
 const cfg = { reps: 3, plants: 10, chars: 10 };
@@ -250,18 +436,19 @@ function renderPreview() {
 
 // ── SCREEN ROUTER ────────────────────────────────────────────
 function show(name) {
-  ['home','setup','entry','export'].forEach(s =>
+  ['home','setup','obs','entry','export'].forEach(s =>
     document.getElementById('screen-'+s).classList.toggle('active', s===name)
   );
-  const titles = { home:'Tarla Kaydı', setup:'Deneme Tasarımı', entry:'Veri Girişi', export:'Özet & Dışa Aktar' };
+  const titles = { home:'TrialCore', setup:'Deneme Tasarımı', obs:'Sayımlar', entry:'Veri Girişi', export:'Özet & Dışa Aktar' };
   document.getElementById('header-title').textContent = titles[name];
   document.getElementById('back-btn').hidden = name === 'home';
 }
 
 document.getElementById('back-btn').addEventListener('click', () => {
   clearCd();
-  if (document.getElementById('screen-entry').classList.contains('active'))       { show('home'); renderHome(); }
-  else if (document.getElementById('screen-export').classList.contains('active')) { show('entry'); renderEntry(); }
+  if (document.getElementById('screen-entry').classList.contains('active'))       { show('obs'); renderObs(); }
+  else if (document.getElementById('screen-export').classList.contains('active')) { show('obs'); renderObs(); }
+  else if (document.getElementById('screen-obs').classList.contains('active'))    { show('home'); renderHome(); }
   else { show('home'); renderHome(); }
 });
 
@@ -285,11 +472,11 @@ function renderHome() {
     return;
   }
   el.innerHTML = filtered.map(t => {
-    const done = filledCount(t), tot = totalCells(t);
-    const pct = tot ? Math.round(done/tot*100) : 0;
-    const badge = pct===100
+    ensureObs(t);
+    const obsCount = t.observations.length;
+    const badge = isDone(t)
       ? '<span class="badge badge-done">Tamamlandı</span>'
-      : `<span class="badge badge-wip">%${pct}</span>`;
+      : `<span class="badge badge-wip">${obsCount} sayım</span>`;
     return `<div class="trial-item" onclick="openTrial('${t.id}')">
       <div class="info">
         <div class="t-name">${t.name}</div>
@@ -301,9 +488,8 @@ function renderHome() {
 
 window.openTrial = function(id) {
   active = trials.find(t => t.id === id);
-  curIdx = active.lastIdx || 0;
-  if (isDone(active)) { renderExport(); show('export'); }
-  else { show('entry'); renderEntry(); }
+  ensureObs(active);
+  show('obs'); renderObs();
 };
 
 document.getElementById('btn-new').addEventListener('click', () => {
@@ -321,9 +507,8 @@ document.getElementById('btn-create').addEventListener('click', () => {
     id: Date.now().toString(), name,
     date: new Date().toLocaleDateString('tr-TR'),
     reps: cfg.reps, plants: cfg.plants, chars: cfg.chars,
-    data: {}, lastIdx: 0, lat: null, lng: null,
+    observations: [], lat: null, lng: null,
   };
-  // GPS konumu al (arka planda)
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => { t.lat = pos.coords.latitude; t.lng = pos.coords.longitude; persist(); },
@@ -332,16 +517,15 @@ document.getElementById('btn-create').addEventListener('click', () => {
     );
   }
   trials.push(t); persist();
-  active = t; curIdx = 0;
-  show('entry'); renderEntry();
+  active = t;
+  show('obs'); renderObs();
 });
 
 // ── TÜRKÇE YAZI → SAYI ──────────────────────────────────────
 function turkceToNumber(text) {
   if (text === '' || text === null || text === undefined) return '';
-  text = text.trim().toLowerCase().replace(/i̇/g, 'i'); // iOS büyük İ düzelt
+  text = text.trim().toLowerCase().replace(/i̇/g, 'i');
 
-  // Zaten sayıysa
   if (/^-?\d+([.,]\d+)?$/.test(text)) return text.replace(',', '.');
 
   const birler = {
@@ -374,7 +558,7 @@ function turkceToNumber(text) {
   const parcalar = temiz.split(/\s*(?:virgül|virgul|nokta)\s*/);
   const tam = parcala(parcalar[0]);
 
-  if (!tam.matched && !buçuk) return text; // Türkçe sayı bulunamadı
+  if (!tam.matched && !buçuk) return text;
 
   if (parcalar.length > 1 && parcalar[1]) {
     const ondalik = parcala(parcalar[1]);
@@ -413,7 +597,6 @@ function renderEntry() {
   document.getElementById('btn-prev').disabled = curIdx === 0;
   clearCd();
 
-  // Klavye hep açık: odakla
   setTimeout(() => { inp.focus(); inp.select(); }, 200);
 }
 
@@ -434,7 +617,7 @@ function doConfirm(val) {
   if (v === '' || !active) return;
   const { rep, plant, char } = cellAt(active, curIdx);
   setv(active, rep, plant, char, v);
-  active.lastIdx = curIdx;
+  if (activeObs) activeObs.lastIdx = curIdx;
   persist();
   updateValDisplay(v, true);
   clearCd();
@@ -442,29 +625,24 @@ function doConfirm(val) {
 
   const inp = document.getElementById('dikte-inp');
 
-  // 1) Blur → dikte durur
   inp.blur();
 
-  // 2) 400ms sonra → sonraki karaktere geç + klavyeyi tekrar aç
   setTimeout(() => {
     if (curIdx < totalCells(active)-1) {
       curIdx++;
-      renderEntryQuiet(); // UI güncelle ama focus yapma
+      renderEntryQuiet();
     } else {
       document.getElementById('prog-text').textContent = '🎉 Tüm değerler girildi!';
       ignoreInput = false;
       return;
     }
-    // 3) 200ms daha → focus (klavye açılır, sadece 🎤'e bas yeter)
     setTimeout(() => {
       inp.focus();
-      // 4) 300ms daha → yeni girdi kabul etmeye başla
       setTimeout(() => { ignoreInput = false; }, 300);
     }, 200);
   }, 400);
 }
 
-// renderEntry'nin focus yapmayan versiyonu (doConfirm akışı için)
 function renderEntryQuiet() {
   if (!active) return;
   const t = active, tot = totalCells(t);
@@ -512,6 +690,74 @@ document.getElementById('btn-prev').addEventListener('click', () => { clearCd();
 document.getElementById('btn-skip').addEventListener('click', () => { clearCd(); if(curIdx<totalCells(active)-1){curIdx++;renderEntry();} });
 document.getElementById('btn-to-export').addEventListener('click', () => { renderExport(); show('export'); });
 
+// ── SAYIM LiSTESi (OBS) ─────────────────────────────────────
+function renderObs() {
+  if (!active) return;
+  ensureObs(active);
+  document.getElementById('obs-trial-name').textContent = active.name;
+  document.getElementById('obs-form').style.display = 'none';
+  const tot = totalCells(active);
+  const el = document.getElementById('obs-list');
+
+  if (!active.observations.length) {
+    el.innerHTML = '<div class="empty-state">Henüz sayım yok.<br>Yeni sayım ekleyerek başlayın.</div>';
+  } else {
+    el.innerHTML = active.observations.map((o, i) => {
+      const done = Object.values(o.data).filter(v => v !== '').length;
+      const pct = tot ? Math.round(done / tot * 100) : 0;
+      let icon, badge;
+      if (pct === 100) { icon = '🟢'; badge = '<span class="badge badge-done">Tamamlandı</span>'; }
+      else if (done > 0) { icon = '🔵'; badge = `<span class="badge badge-wip">%${pct}</span>`; }
+      else { icon = '⚪'; badge = '<span class="badge badge-wait">Bekliyor</span>'; }
+      return `<div class="obs-item" onclick="openObs(${i})">
+        <div class="obs-icon">${icon}</div>
+        <div class="obs-info">
+          <div class="obs-label">${i + 1}. Sayım — ${o.label}</div>
+          <div class="obs-meta">${o.date} · ${done}/${tot} hücre</div>
+        </div>
+        ${badge}
+      </div>`;
+    }).join('');
+  }
+}
+
+window.openObs = function(idx) {
+  activeObs = active.observations[idx];
+  curIdx = activeObs.lastIdx || 0;
+  show('entry'); renderEntry();
+};
+
+document.getElementById('btn-new-obs').addEventListener('click', () => {
+  const form = document.getElementById('obs-form');
+  form.style.display = form.style.display === 'none' ? '' : 'none';
+  document.getElementById('inp-obs-label').value = '';
+  document.getElementById('inp-obs-date').value = new Date().toLocaleDateString('tr-TR');
+  setTimeout(() => document.getElementById('inp-obs-label').focus(), 100);
+});
+
+document.getElementById('btn-start-obs').addEventListener('click', () => {
+  const label = document.getElementById('inp-obs-label').value.trim();
+  if (!label) { alert('Sayım etiketi girin (ör. 3. Gün)'); return; }
+  const obs = {
+    id: 'obs_' + Date.now(),
+    label,
+    date: document.getElementById('inp-obs-date').value || new Date().toLocaleDateString('tr-TR'),
+    data: {},
+    lastIdx: 0,
+  };
+  active.observations.push(obs);
+  persist();
+  activeObs = obs;
+  curIdx = 0;
+  show('entry'); renderEntry();
+});
+
+document.getElementById('btn-obs-export').addEventListener('click', () => {
+  if (!active.observations.length) { alert('Henüz sayım yok.'); return; }
+  activeObs = active.observations[active.observations.length - 1];
+  renderExport(); show('export');
+});
+
 function startCd(val) {
   clearCd();
   document.getElementById('countdown').textContent = 'Kaydediliyor…';
@@ -520,6 +766,37 @@ function startCd(val) {
 function clearCd() {
   if(cdTimer){clearTimeout(cdTimer);cdTimer=null;}
   document.getElementById('countdown').textContent='';
+}
+
+// ── iSTATiSTiK HESAPLAMA ─────────────────────────────────────
+function calcStats(values) {
+  const nums = values.map(Number).filter(n => !isNaN(n));
+  if (!nums.length) return { n:0, avg:0, std:0, cv:0, min:0, max:0 };
+  const n = nums.length;
+  const avg = nums.reduce((a,b) => a+b, 0) / n;
+  const std = Math.sqrt(nums.reduce((a,b) => a + (b-avg)**2, 0) / (n > 1 ? n-1 : 1));
+  const cv = avg !== 0 ? (std / Math.abs(avg)) * 100 : 0;
+  return { n, avg, std, cv, min: Math.min(...nums), max: Math.max(...nums) };
+}
+
+function getCharStats(t) {
+  const stats = [];
+  for (let ci = 0; ci < t.chars; ci++) {
+    const allVals = [];
+    const repAvgs = [];
+    for (let r = 0; r < t.reps; r++) {
+      const repVals = [];
+      for (let p = 0; p < t.plants; p++) {
+        const v = getv(t, r, p, ci);
+        if (v !== '') { allVals.push(v); repVals.push(v); }
+      }
+      const rs = calcStats(repVals);
+      repAvgs.push(rs.avg);
+    }
+    const overall = calcStats(allVals);
+    stats.push({ charIdx: ci, code: charCode(0, ci), overall, repAvgs });
+  }
+  return stats;
 }
 
 // ── EXPORT ───────────────────────────────────────────────────
@@ -537,8 +814,40 @@ function buildRows(t) {
   return allRows;
 }
 
+function heatColor(val, min, max) {
+  if (min === max) return 'background:rgba(120,180,220,0.45)';
+  const ratio = (val - min) / (max - min);
+  const stops = [
+    [65, 105, 185],
+    [100, 160, 215],
+    [245, 235, 180],
+    [230, 150, 70],
+    [180, 50, 45],
+  ];
+  const seg = Math.min(ratio * 4, 3.999);
+  const i = Math.floor(seg);
+  const t = seg - i;
+  const c0 = stops[i], c1 = stops[i + 1];
+  const r = Math.round(c0[0] + t * (c1[0] - c0[0]));
+  const g = Math.round(c0[1] + t * (c1[1] - c0[1]));
+  const b = Math.round(c0[2] + t * (c1[2] - c0[2]));
+  return `background:rgba(${r},${g},${b},0.55)`;
+}
+
 function renderExport() {
   const t = active;
+
+  const charMinMax = [];
+  for (let ci = 0; ci < t.chars; ci++) {
+    let vals = [];
+    for (let r = 0; r < t.reps; r++)
+      for (let p = 0; p < t.plants; p++) {
+        const v = getv(t, r, p, ci);
+        if (v !== '') vals.push(Number(v));
+      }
+    charMinMax.push(vals.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null);
+  }
+
   const rows = buildRows(t);
   let html = '<tbody>';
   rows.forEach(row => {
@@ -547,11 +856,216 @@ function renderExport() {
       html += '<tr><td class="row-label">Bitki</td>' + row.codes.map(c=>`<th>${c}</th>`).join('') + '</tr>';
     } else {
       html += `<tr><td class="row-label">${row.plant}</td>` +
-        row.vals.map(v => v !== '' ? `<td>${v}</td>` : `<td class="empty">—</td>`).join('') + '</tr>';
+        row.vals.map((v, ci) => {
+          if (v === '') return '<td class="empty">—</td>';
+          const mm = charMinMax[ci];
+          const style = mm ? heatColor(Number(v), mm.min, mm.max) : '';
+          return `<td style="${style};color:#000;text-shadow:0 0 4px rgba(255,255,255,0.5)">${v}</td>`;
+        }).join('') + '</tr>';
     }
   });
   html += '</tbody>';
   document.getElementById('exp-table').innerHTML = html;
+
+  const stats = getCharStats(t);
+  let shtml = '<thead><tr><th>Karakter</th><th>N</th><th>Ort.</th><th>Std Sapma</th><th>CV%</th><th>Min</th><th>Max</th>';
+  for (let r = 0; r < t.reps; r++) shtml += `<th>Tek${r+1} Ort</th>`;
+  shtml += '</tr></thead><tbody>';
+  stats.forEach(s => {
+    const cvClass = s.overall.cv < 10 ? 'color:#4ade80' : s.overall.cv < 20 ? 'color:#fbbf24' : 'color:#f87171';
+    shtml += `<tr><td class="row-label">${s.code}</td>`;
+    shtml += `<td>${s.overall.n}</td>`;
+    shtml += `<td>${s.overall.avg.toFixed(2)}</td>`;
+    shtml += `<td>${s.overall.std.toFixed(2)}</td>`;
+    shtml += `<td style="${cvClass};font-weight:700">${s.overall.cv.toFixed(1)}%</td>`;
+    shtml += `<td>${s.overall.min}</td><td>${s.overall.max}</td>`;
+    s.repAvgs.forEach(ra => shtml += `<td>${ra.toFixed(2)}</td>`);
+    shtml += '</tr>';
+  });
+  shtml += '</tbody>';
+  document.getElementById('stat-table').innerHTML = shtml;
+
+  const hasMulti = active.observations && active.observations.length > 1;
+  document.getElementById('etab-timeline').style.display = hasMulti ? '' : 'none';
+
+  document.getElementById('etab-raw').classList.add('active');
+  document.getElementById('etab-analysis').classList.remove('active');
+  document.getElementById('etab-timeline').classList.remove('active');
+  document.getElementById('panel-raw').style.display = '';
+  document.getElementById('panel-analysis').style.display = 'none';
+  document.getElementById('panel-timeline').style.display = 'none';
+}
+
+// ── GRAFiKLER ────────────────────────────────────────────────
+let currentChart = null;
+const repColors = ['#388bfd','#3fb950','#d29922','#f85149','#a371f7','#f778ba','#79c0ff','#a5d6a7'];
+
+function renderChart(type, stats, t) {
+  if (currentChart) currentChart.destroy();
+  const ctx = document.getElementById('chart-canvas').getContext('2d');
+  const labels = stats.map(s => String(s.code));
+
+  if (type === 'avg') {
+    currentChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Genel Ortalama',
+          data: stats.map(s => +s.overall.avg.toFixed(2)),
+          backgroundColor: '#388bfd',
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { labels: { color:'#7d8590' } } },
+        scales: { x: { ticks:{color:'#7d8590'} }, y: { ticks:{color:'#7d8590'}, grid:{color:'#21262d'} } }
+      }
+    });
+  } else if (type === 'cv') {
+    const bgColors = stats.map(s => s.overall.cv < 10 ? '#3fb950' : s.overall.cv < 20 ? '#d29922' : '#f85149');
+    currentChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'CV%',
+          data: stats.map(s => +s.overall.cv.toFixed(1)),
+          backgroundColor: bgColors,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { labels: { color:'#7d8590' } } },
+        scales: { x: { ticks:{color:'#7d8590'} }, y: { ticks:{color:'#7d8590'}, grid:{color:'#21262d'} } }
+      }
+    });
+  } else if (type === 'rep') {
+    const datasets = [];
+    for (let r = 0; r < t.reps; r++) {
+      datasets.push({
+        label: `Tekerrür ${r+1}`,
+        data: stats.map(s => +s.repAvgs[r].toFixed(2)),
+        backgroundColor: repColors[r % repColors.length],
+        borderRadius: 4,
+      });
+    }
+    currentChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        responsive: true, plugins: { legend: { labels: { color:'#7d8590' } } },
+        scales: { x: { ticks:{color:'#7d8590'} }, y: { ticks:{color:'#7d8590'}, grid:{color:'#21262d'} } }
+      }
+    });
+  }
+}
+
+// Ana sekmeler: Ham Veri / Analiz / Zaman Serisi
+function setExportTab(tab) {
+  ['raw','analysis','timeline'].forEach(t => {
+    document.getElementById('etab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('panel-'+t).style.display = t===tab ? '' : 'none';
+  });
+}
+
+document.getElementById('etab-raw').addEventListener('click', () => setExportTab('raw'));
+
+document.getElementById('etab-analysis').addEventListener('click', () => {
+  setExportTab('analysis');
+  if (active) renderChart('avg', getCharStats(active), active);
+});
+
+document.getElementById('etab-timeline').addEventListener('click', () => {
+  setExportTab('timeline');
+  if (active) renderTimeline();
+});
+
+// Analiz alt sekmeleri
+['avg','cv','rep'].forEach(type => {
+  document.getElementById('ctab-'+type).addEventListener('click', () => {
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('ctab-'+type).classList.add('active');
+    if (active) renderChart(type, getCharStats(active), active);
+  });
+});
+
+// ── ZAMAN SERiSi ────────────────────────────────────────────
+let timelineChart = null;
+
+function getCharStatsForObs(t, obs) {
+  const stats = [];
+  for (let ci = 0; ci < t.chars; ci++) {
+    const allVals = [];
+    for (let r = 0; r < t.reps; r++)
+      for (let p = 0; p < t.plants; p++) {
+        const v = obs.data[cellKey(r, p, ci)] ?? '';
+        if (v !== '') allVals.push(v);
+      }
+    stats.push({ charIdx: ci, code: charCode(0, ci), overall: calcStats(allVals) });
+  }
+  return stats;
+}
+
+function renderTimeline() {
+  if (!active || !active.observations || active.observations.length < 2) return;
+  const obsList = active.observations;
+
+  let html = '<thead><tr><th>Karakter</th>';
+  obsList.forEach(o => html += `<th>${o.label}<br><small style="font-weight:400;opacity:.7">${o.date}</small></th>`);
+  html += '</tr></thead><tbody>';
+
+  const allObsStats = obsList.map(o => getCharStatsForObs(active, o));
+
+  for (let ci = 0; ci < active.chars; ci++) {
+    html += `<tr><td class="row-label">${charCode(0, ci)}</td>`;
+    allObsStats.forEach(stats => {
+      const s = stats[ci];
+      html += s.overall.n > 0
+        ? `<td>${s.overall.avg.toFixed(2)}</td>`
+        : '<td class="empty">—</td>';
+    });
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  document.getElementById('timeline-table').innerHTML = html;
+
+  if (timelineChart) timelineChart.destroy();
+  const ctx = document.getElementById('timeline-chart').getContext('2d');
+  const labels = obsList.map(o => o.label);
+  const datasets = [];
+  const colors = ['#388bfd','#3fb950','#d29922','#f85149','#a371f7','#f778ba','#79c0ff','#a5d6a7','#ff9f43','#ee5a24'];
+
+  for (let ci = 0; ci < active.chars; ci++) {
+    const data = allObsStats.map(stats => {
+      const s = stats[ci];
+      return s.overall.n > 0 ? +s.overall.avg.toFixed(2) : null;
+    });
+    datasets.push({
+      label: String(charCode(0, ci)),
+      data,
+      borderColor: colors[ci % colors.length],
+      backgroundColor: colors[ci % colors.length] + '33',
+      fill: false,
+      tension: 0.3,
+      borderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+    });
+  }
+
+  timelineChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#7d8590', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#7d8590' }, grid: { color: '#21262d' } },
+        y: { ticks: { color: '#7d8590' }, grid: { color: '#21262d' } },
+      }
+    }
+  });
 }
 
 function buildXlsx(t) {
@@ -563,15 +1077,12 @@ function buildXlsx(t) {
     const charCodes = Array.from({length:t.chars}, (_,ci) => charCode(r,ci));
     const headerRow = [label, ...charCodes];
 
-    // İlk tekerrürde sağ üst köşeye tarih + GPS yaz
     if (r === 0) {
-      // Sağ tarafa boş hücreler ekle, sonra tarih sütunu
       while (headerRow.length < t.chars + 2) headerRow.push('');
       headerRow.push('Tarih: ' + t.date);
     }
     wsData.push(headerRow);
 
-    // İlk tekerrürün ilk satırına GPS bilgisi ekle
     if (r === 0) {
       const firstPlantRow = [1];
       for (let ci = 0; ci < t.chars; ci++) {
@@ -586,7 +1097,6 @@ function buildXlsx(t) {
       }
       wsData.push(firstPlantRow);
 
-      // Kalan bitkiler (2'den itibaren)
       for (let p = 1; p < t.plants; p++) {
         const row = [p+1];
         for (let ci = 0; ci < t.chars; ci++) {
@@ -596,7 +1106,6 @@ function buildXlsx(t) {
         wsData.push(row);
       }
     } else {
-      // Diğer tekerrürler normal
       for (let p = 0; p < t.plants; p++) {
         const row = [p+1];
         for (let ci = 0; ci < t.chars; ci++) {
@@ -612,7 +1121,6 @@ function buildXlsx(t) {
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   ws['!cols'] = [{wch:30}, ...Array(t.chars).fill({wch:8}), {wch:4}, {wch:45}];
 
-  // GPS hücresini tıklanabilir link yap
   if (t.lat && t.lng) {
     const gpsCell = XLSX.utils.encode_cell({r:1, c:t.chars+2});
     if (ws[gpsCell]) {
@@ -620,7 +1128,85 @@ function buildXlsx(t) {
     }
   }
 
-  XLSX.utils.book_append_sheet(wb, ws, t.name.slice(0,31));
+  XLSX.utils.book_append_sheet(wb, ws, 'Veri');
+
+  // 2. SEKME: ANALiZ
+  const stats = getCharStats(t);
+  const aData = [];
+
+  const aHeader = ['Karakter', 'N', 'Ortalama', 'Std Sapma', 'CV%', 'Min', 'Max'];
+  for (let r = 0; r < t.reps; r++) aHeader.push(`Tek${r+1} Ort`);
+  aHeader.push('', '', 'REFERANS TABLOSU');
+  aData.push(aHeader);
+
+  const refRows = [
+    ['CV% < 10%', 'İyi — Veriler tutarlı'],
+    ['CV% 10-20%', 'Kabul edilebilir'],
+    ['CV% 20-30%', 'Yüksek değişkenlik'],
+    ['CV% > 30%', 'Sorunlu — Kontrol edin'],
+  ];
+
+  stats.forEach((s, i) => {
+    const row = [
+      s.code,
+      s.overall.n,
+      +s.overall.avg.toFixed(2),
+      +s.overall.std.toFixed(2),
+      +s.overall.cv.toFixed(1),
+      s.overall.min,
+      s.overall.max,
+    ];
+    s.repAvgs.forEach(ra => row.push(+ra.toFixed(2)));
+    if (i < refRows.length) {
+      row.push('', '', refRows[i][0], refRows[i][1]);
+    }
+    aData.push(row);
+  });
+
+  aData.push([]);
+  const allN = stats.reduce((a,s) => a + s.overall.n, 0);
+  const avgCV = stats.length ? stats.reduce((a,s) => a + s.overall.cv, 0) / stats.length : 0;
+  aData.push(['GENEL ÖZET', '', '', '', '', '', '']);
+  aData.push(['Toplam Ölçüm', allN]);
+  aData.push(['Ortalama CV%', +avgCV.toFixed(1)]);
+  aData.push(['Deneme Tarihi', t.date]);
+  if (t.lat && t.lng) {
+    aData.push(['Konum', `https://maps.google.com/?q=${t.lat},${t.lng}`]);
+  }
+
+  const ws2 = XLSX.utils.aoa_to_sheet(aData);
+  ws2['!cols'] = [
+    {wch:12}, {wch:6}, {wch:10}, {wch:10}, {wch:8}, {wch:8}, {wch:8},
+    ...Array(t.reps).fill({wch:10}),
+    {wch:3}, {wch:3}, {wch:16}, {wch:28}
+  ];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Analiz');
+
+  // 3. SEKME: ZAMAN SERiSi
+  ensureObs(t);
+  if (t.observations && t.observations.length > 1) {
+    const tData = [];
+    const obsList = t.observations;
+    const tHeader = ['Karakter', ...obsList.map(o => `${o.label} (${o.date})`)];
+    tData.push(tHeader);
+    for (let ci = 0; ci < t.chars; ci++) {
+      const row = [charCode(0, ci)];
+      obsList.forEach(o => {
+        const vals = [];
+        for (let r = 0; r < t.reps; r++)
+          for (let p = 0; p < t.plants; p++) {
+            const v = o.data[cellKey(r, p, ci)] ?? '';
+            if (v !== '') vals.push(Number(v));
+          }
+        row.push(vals.length ? +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : '');
+      });
+      tData.push(row);
+    }
+    const ws3 = XLSX.utils.aoa_to_sheet(tData);
+    ws3['!cols'] = [{wch:12}, ...obsList.map(()=>({wch:18}))];
+    XLSX.utils.book_append_sheet(wb, ws3, 'Zaman Serisi');
+  }
+
   const fn = (t.name+'_'+t.date).replace(/[\s/\\:*?"<>|]/g,'_')+'.xlsx';
   return { wb, filename: fn };
 }
@@ -649,6 +1235,10 @@ document.getElementById('btn-del').addEventListener('click', () => {
 // ── INIT ─────────────────────────────────────────────────────
 renderPreview();
 renderHome();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
